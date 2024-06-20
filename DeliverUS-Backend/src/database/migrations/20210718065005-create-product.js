@@ -32,6 +32,11 @@ module.exports = {
       availability: {
         type: Sequelize.BOOLEAN
       },
+      visibleUntil: {
+        type: Sequelize.DATE,
+        allowNull: true,
+        defaultValue: null
+      },
       restaurantId: {
         type: Sequelize.INTEGER,
         allowNull: false,

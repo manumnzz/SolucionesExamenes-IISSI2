@@ -1,17 +1,28 @@
 import { Product, Order, Restaurant, RestaurantCategory, ProductCategory } from '../models/models.js'
-import Sequelize from 'sequelize'
+import { Sequelize, Op } from 'sequelize'
 
 const indexRestaurant = async function (req, res) {
   try {
     const products = await Product.findAll({
       where: {
-        restaurantId: req.params.restaurantId
+        restaurantId: req.params.restaurantId,
+        [Op.or]: [
+          {
+            visibleUntil: {
+              [Op.gte]: new Date() // Productos visibles en el futuro
+            }
+          },
+          {
+            visibleUntil: null // Productos sin fecha de visibilidad
+          }
+        ]
       },
       include: [
         {
           model: ProductCategory,
           as: 'productCategory'
-        }]
+        }
+      ]
     })
     res.json(products)
   } catch (err) {
