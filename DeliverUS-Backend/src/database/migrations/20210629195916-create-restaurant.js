@@ -30,6 +30,11 @@ module.exports = {
         defaultValue: 0.0,
         type: Sequelize.DOUBLE
       },
+      percentage: {
+        allowNull: false,
+        defaultValue: 0.0,
+        type: Sequelize.DOUBLE
+      },
       averageServiceMinutes: {
         allowNull: true,
         type: Sequelize.DOUBLE

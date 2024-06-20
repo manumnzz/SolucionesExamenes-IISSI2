@@ -39,6 +39,7 @@ const show = async function (req, res) {
 const create = async function (req, res) {
   let newProduct = Product.build(req.body)
   try {
+    req.body.basePrice = newProduct.price
     newProduct = await newProduct.save()
     res.json(newProduct)
   } catch (err) {
@@ -48,6 +49,7 @@ const create = async function (req, res) {
 
 const update = async function (req, res) {
   try {
+    req.body.basePrice = req.body.price
     await Product.update(req.body, { where: { id: req.params.productId } })
     const updatedProduct = await Product.findByPk(req.params.productId)
     res.json(updatedProduct)
