@@ -59,7 +59,7 @@ const update = [
     return checkFileMaxSize(req, 'image', maxFileSize)
   }).withMessage('Maximum file size of ' + maxFileSize / 1000000 + 'MB'),
   check('restaurantId').not().exists(),
-  check('visibleUntil').optional().isDate().toDate(),
+  check('visibleUntil').default(null).optional().isDate().toDate(),
   check('visibleUntil').custom((value, { req }) => {
     const currentDate = new Date()
     if (value && value < currentDate) {

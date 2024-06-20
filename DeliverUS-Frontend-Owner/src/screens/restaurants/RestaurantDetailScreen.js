@@ -62,6 +62,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       >
         <TextRegular numberOfLines={2}>{item.description}</TextRegular>
         <TextSemiBold textStyle={styles.price}>{item.price.toFixed(2) !== item.basePrice.toFixed(2) && item.basePrice.toFixed(2) !== 0 ? item.basePrice.toFixed(2) : item.price.toFixed(2) }€</TextSemiBold>
+        <TextSemiBold textStyle={styles.visibleUntil}>{'Is about to dissappear!'}</TextSemiBold>
         {!item.availability &&
           <TextRegular textStyle={styles.availability }>Not available</TextRegular>
         }
@@ -244,5 +245,10 @@ const styles = StyleSheet.create({
     bottom: 5,
     position: 'absolute',
     width: '90%'
+  },
+  visibleUntil: {
+    textAlign: 'right',
+    marginRight: 5,
+    color: GlobalStyles.brandPrimary
   }
 })

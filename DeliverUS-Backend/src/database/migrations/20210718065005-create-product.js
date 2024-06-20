@@ -34,7 +34,6 @@ module.exports = {
       },
       visibleUntil: {
         type: Sequelize.DATE,
-        allowNull: true,
         defaultValue: null
       },
       restaurantId: {
