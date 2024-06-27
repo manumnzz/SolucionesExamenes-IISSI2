@@ -11,6 +11,11 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
+      pinned: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+      },
       description: {
         type: Sequelize.TEXT
       },
@@ -70,6 +75,21 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: new Date()
+      },
+      sortedBy: {
+        allowNull: false,
+        type: Sequelize.ENUM,
+        defaultValue: 'order',
+        values: [
+          'price',
+          'order'
+        ]
+      },
+      discountCode: {
+        type: Sequelize.STRING
+      },
+      discount: {
+        type: Sequelize.DOUBLE
       },
       userId: {
         allowNull: false,

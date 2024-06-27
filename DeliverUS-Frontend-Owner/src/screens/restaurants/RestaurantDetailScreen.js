@@ -11,7 +11,6 @@ import TextSemiBold from '../../components/TextSemibold'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import DeleteModal from '../../components/DeleteModal'
 import defaultProductImage from '../../../assets/product.jpeg'
-
 export default function RestaurantDetailScreen ({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
   const [productToBeDeleted, setProductToBeDeleted] = useState(null)
@@ -119,6 +118,18 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   const fetchRestaurantDetail = async () => {
     try {
       const fetchedRestaurant = await getDetail(route.params.id)
+      if (fetchedRestaurant.sortedBy === 'price') {
+        const sortedProducts = fetchedRestaurant.products.sort((a, b) => {
+          if (a.price > b.price) {
+            return 1
+          } else if (a.price < b.price) {
+            return -1
+          } else {
+            return 0
+          }
+        })
+        setRestaurant({ ...fetchedRestaurant, products: sortedProducts })
+      }
       setRestaurant(fetchedRestaurant)
     } catch (error) {
       showMessage({

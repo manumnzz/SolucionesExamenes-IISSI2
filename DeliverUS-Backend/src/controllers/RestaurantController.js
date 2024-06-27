@@ -111,6 +111,37 @@ const destroy = async function (req, res) {
     res.status(500).send(err)
   }
 }
+const pinRestaurant = async function (req, res) {
+  try {
+    const restaurantToPin = await Restaurant.findByPk(req.params.restaurantId)
+
+    if (!restaurantToPin) {
+      return res.status(404).json({ error: 'Restaurante no encontrado' })
+    }
+    if (restaurantToPin.pinned === true) {
+      const updatedRestaurant = await restaurantToPin.update({ pinned: false })
+      res.json(updatedRestaurant)
+    } else {
+      const updatedRestaurant = await restaurantToPin.update({ pinned: true })
+      res.json(updatedRestaurant)
+    }
+  } catch (err) {
+    console.error('Error al anclar restaurante:', err)
+    res.status(500).send(err)
+  }
+}
+
+const updateRestaurantSort = async function (req, res) {
+  try {
+    const restaurantToUpdate = await Restaurant.findByPk(req.params.restaurantId)
+    const newSortedBy = restaurantToUpdate.sortedBy === 'order' ? 'price' : 'order'
+    const newRestaurant = restaurantToUpdate.update({ sortedBy: newSortedBy })
+    newRestaurant.save()
+    res.json(newRestaurant)
+  } catch (err) {
+    res.status(500).send(err)
+  }
+}
 
 const RestaurantController = {
   index,
@@ -118,6 +149,8 @@ const RestaurantController = {
   create,
   show,
   update,
-  destroy
+  destroy,
+  pinRestaurant,
+  updateRestaurantSort
 }
 export default RestaurantController

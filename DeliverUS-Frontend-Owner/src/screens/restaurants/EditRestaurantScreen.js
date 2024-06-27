@@ -59,7 +59,14 @@ export default function EditRestaurantScreen ({ navigation, route }) {
       .number()
       .positive()
       .integer()
-      .required('Restaurant category is required')
+      .required('Restaurant category is required'),
+    discountCode: yup
+      .string()
+      .max(10, 'Discount Code is too long.'),
+    discount: yup
+      .number()
+      .min(0, 'The discount percentage must be over 0%')
+      .max(99, 'The discount percentage must be under 99%')
   })
 
   useEffect(() => {
@@ -231,6 +238,23 @@ export default function EditRestaurantScreen ({ navigation, route }) {
               />
               <ErrorMessage name={'restaurantCategoryId'} render={msg => <TextError>{msg}</TextError> }/>
 
+              <Pressable onPress={() => navigation.navigate('CreateRestaurantCategorieScreen')}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: pressed
+                    ? GlobalStyles.brandGreenTap
+                    : GlobalStyles.brandGreen
+                },
+                styles.button
+              ]}>
+            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+            <MaterialCommunityIcons name='folder-plus-outline' color={'white'} size={20} />
+              <TextRegular textStyle={styles.text}>
+                New Category
+              </TextRegular>
+            </View>
+          </Pressable>
+
               <Pressable onPress={() =>
                 pickImage(
                   async result => {
@@ -260,7 +284,14 @@ export default function EditRestaurantScreen ({ navigation, route }) {
               {backendErrors &&
                 backendErrors.map((error, index) => <TextError key={index}>{error.param}-{error.msg}</TextError>)
               }
-
+              <InputItem
+                name='discount'
+                label='Discount:'
+                />
+                <InputItem
+                  name='discountCode'
+                  label='Discount Code:'
+                />
               <Pressable
                 onPress={handleSubmit}
                 style={({ pressed }) => [

@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, FlatList, Pressable, View } from 'react-native'
 
-import { getAll, remove } from '../../api/RestaurantEndpoints'
+import { getAll, remove, pinRestaurant, updateRestaurantSort } from '../../api/RestaurantEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextSemiBold from '../../components/TextSemibold'
 import TextRegular from '../../components/TextRegular'
@@ -11,11 +11,13 @@ import * as GlobalStyles from '../../styles/GlobalStyles'
 import { AuthorizationContext } from '../../context/AuthorizationContext'
 import { showMessage } from 'react-native-flash-message'
 import DeleteModal from '../../components/DeleteModal'
+import UpdatePinRestaurantModal from '../../components/UpdatePinRestaurantModal'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
 
 export default function RestaurantsScreen ({ navigation, route }) {
   const [restaurants, setRestaurants] = useState([])
   const [restaurantToBeDeleted, setRestaurantToBeDeleted] = useState(null)
+  const [restaurantToBePinned, setRestaurantToBePinned] = useState(null)
   const { loggedInUser } = useContext(AuthorizationContext)
 
   useEffect(() => {
@@ -26,6 +28,28 @@ export default function RestaurantsScreen ({ navigation, route }) {
     }
   }, [loggedInUser, route])
 
+  const toggleRestaurantProductsOrder = async (restaurant) => {
+    try {
+      const modifiedRestaurant = await updateRestaurantSort(restaurant.id)
+      if (modifiedRestaurant) {
+        await fetchRestaurants()
+        showMessage({
+          message: `Restaurant ${restaurant.name} succesfully changed sorting method`,
+          type: 'success',
+          style: GlobalStyles.flashStyle,
+          titleStyle: GlobalStyles.flashTextStyle
+        })
+      }
+    } catch (error) {
+      showMessage({
+        message: `There was an error while changing products order of the restaurant ${restaurant.name}. ${error.message}`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
+
   const renderRestaurant = ({ item }) => {
     return (
       <ImageCard
@@ -35,6 +59,8 @@ export default function RestaurantsScreen ({ navigation, route }) {
           navigation.navigate('RestaurantDetailScreen', { id: item.id })
         }}
       >
+        {item.discount !== null && item.discountCode !== null && <TextSemiBold><TextSemiBold textStyle={{ color: GlobalStyles.brandPrimary }}>{item.discount}% of discount using the code <TextSemiBold>{item.discountCode}</TextSemiBold></TextSemiBold></TextSemiBold>}
+        <MaterialCommunityIcons name={item.pinned ? 'star' : 'star-outline'}color={GlobalStyles.brandSecondaryTap}size={24}/>
         <TextRegular numberOfLines={2}>{item.description}</TextRegular>
         {item.averageServiceMinutes !== null &&
           <TextSemiBold>Avg. service time: <TextSemiBold textStyle={{ color: GlobalStyles.brandPrimary }}>{item.averageServiceMinutes} min.</TextSemiBold></TextSemiBold>
@@ -45,6 +71,25 @@ export default function RestaurantsScreen ({ navigation, route }) {
         </View>
         }
         <View style={styles.actionButtonsContainer}>
+        <Pressable
+            onPress={() => setRestaurantToBePinned(item)
+            }
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandSecondary
+                  : GlobalStyles.brandSecondaryTap
+              },
+              styles.actionButton
+            ]}>
+          <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+            <MaterialCommunityIcons name='star' color={'white'} size={20}/>
+            <TextRegular textStyle={styles.text}>
+              Pin
+            </TextRegular>
+          </View>
+        </Pressable>
+
           <Pressable
             onPress={() => navigation.navigate('EditRestaurantScreen', { id: item.id })
             }
@@ -81,6 +126,24 @@ export default function RestaurantsScreen ({ navigation, route }) {
             </TextRegular>
           </View>
         </Pressable>
+        <Pressable
+          onPress={() => toggleRestaurantProductsOrder(item)}
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed
+                ? GlobalStyles.brandSuccess
+                : GlobalStyles.brandSuccessDisabled
+            },
+            styles.actionButton
+          ]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <MaterialCommunityIcons name='sort' color={'white'} size={20} />
+          <TextRegular textStyle={styles.text}>
+            Sorted by: {item.sortedBy}
+          </TextRegular>
+          </View>
+        </Pressable>
+
         </View>
       </ImageCard>
     )
@@ -123,10 +186,20 @@ export default function RestaurantsScreen ({ navigation, route }) {
   const fetchRestaurants = async () => {
     try {
       const fetchedRestaurants = await getAll()
-      setRestaurants(fetchedRestaurants)
+      fetchedRestaurants.sort((a, b) => {
+        if (a.pinned && !b.pinned) {
+          return -1 // 'a' tiene pinned true, 'b' no
+        } else if (!a.pinned && b.pinned) {
+          return 1 // 'b' tiene pinned true, 'a' no
+        } else {
+          return 0 // Igual en 'pinned', no se cambia el orden
+        }
+      })
+
+      setRestaurants(fetchedRestaurants) // Actualizar el estado de los restaurantes
     } catch (error) {
       showMessage({
-        message: `There was an error while retrieving restaurants. ${error} `,
+        message: `Hubo un error al recuperar los restaurantes. ${error}`,
         type: 'error',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
@@ -134,6 +207,28 @@ export default function RestaurantsScreen ({ navigation, route }) {
     }
   }
 
+  const updatePinRestaurant = async (restaurant) => {
+    try {
+      await pinRestaurant(restaurant.id)
+      await fetchRestaurants()
+      setRestaurantToBePinned(null)
+      showMessage({
+        message: `Restaurant ${restaurant.name} succesfully pinned`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (err) {
+      console.log(err)
+      setRestaurantToBePinned(null)
+      showMessage({
+        message: `Restaurant ${restaurant.name} could not be pinned.`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
   const removeRestaurant = async (restaurant) => {
     try {
       await remove(restaurant.id)
@@ -174,6 +269,13 @@ export default function RestaurantsScreen ({ navigation, route }) {
         <TextRegular>The products of this restaurant will be deleted as well</TextRegular>
         <TextRegular>If the restaurant has orders, it cannot be deleted.</TextRegular>
     </DeleteModal>
+
+    <UpdatePinRestaurantModal
+      isVisible={restaurantToBePinned !== null}
+      onCancel={() => setRestaurantToBePinned(null)}
+      onConfirm={() => updatePinRestaurant(restaurantToBePinned)}>
+        <TextRegular>Please confirm action</TextRegular>
+    </UpdatePinRestaurantModal>
     </>
   )
 }
@@ -189,7 +291,7 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: 'center',
     flexDirection: 'row',
-    width: '80%'
+    width: '60%'
   },
   actionButton: {
     borderRadius: 8,
@@ -199,12 +301,13 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: 'center',
     flexDirection: 'column',
-    width: '50%'
+    width: '15%'
   },
   actionButtonsContainer: {
     flexDirection: 'row',
     bottom: 5,
     position: 'absolute',
+
     width: '90%'
   },
   text: {

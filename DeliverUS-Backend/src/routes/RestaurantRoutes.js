@@ -20,7 +20,22 @@ const loadFileRoutes = function (app) {
       RestaurantValidation.create,
       handleValidation,
       RestaurantController.create)
-
+  app.route('/restaurants/:restaurantId/pinned')
+    .patch(
+      isLoggedIn,
+      hasRole('owner'),
+      checkEntityExists(Restaurant, 'restaurantId'),
+      RestaurantMiddleware.checkRestaurantOwnership,
+      RestaurantController.pinRestaurant
+    )
+  app.route('/restaurants/:restaurantId/sortedBy')
+    .patch(
+      isLoggedIn,
+      hasRole('owner'),
+      checkEntityExists(Restaurant, 'restaurantId'),
+      RestaurantMiddleware.checkRestaurantOwnership,
+      RestaurantController.updateRestaurantSort
+    )
   app.route('/restaurants/:restaurantId')
     .get(
       checkEntityExists(Restaurant, 'restaurantId'),

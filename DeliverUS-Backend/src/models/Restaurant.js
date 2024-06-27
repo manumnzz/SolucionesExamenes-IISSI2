@@ -31,6 +31,11 @@ const loadModel = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING
     },
+    pinned: {
+      allowNull: false,
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     description: DataTypes.TEXT,
     address: {
       allowNull: false,
@@ -77,6 +82,20 @@ const loadModel = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.DATE,
       defaultValue: new Date()
+    },
+    sortedBy: {
+      type: DataTypes.ENUM,
+      values: [
+        'price',
+        'order'
+      ],
+      defaultValue: 'order'
+    },
+    discountCode: {
+      type: DataTypes.STRING
+    },
+    discount: {
+      type: DataTypes.DOUBLE
     }
   }, {
     sequelize,
