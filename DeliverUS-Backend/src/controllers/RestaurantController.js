@@ -136,7 +136,6 @@ const updateRestaurantSort = async function (req, res) {
     const restaurantToUpdate = await Restaurant.findByPk(req.params.restaurantId)
     const newSortedBy = restaurantToUpdate.sortedBy === 'order' ? 'price' : 'order'
     const newRestaurant = restaurantToUpdate.update({ sortedBy: newSortedBy })
-    newRestaurant.save()
     res.json(newRestaurant)
   } catch (err) {
     res.status(500).send(err)
